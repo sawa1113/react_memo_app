@@ -22,17 +22,36 @@ const App = () => {
   }, []);
 
   const addMemo = () => { // メモを追加する関数
-    axios.post('http://localhost:3000/api/memos', { content })
-    // content の内容をRails APIに送信（新しいメモを作成）。
-      .then(response => {
-        setMemos([...memos, response.data])
+    if (window.confirm('メモを追加しますか？')) {
+      axios.post('http://localhost:3000/api/memos', { content })
+      // content の内容をRails APIに送信（新しいメモを作成）。
+        .then(response => {
+          setMemos([...memos, response.data])
+          // 新しく作成されたメモを memos に追加する。
+          setContent('');
+          // メモの内容を空にする。
+          alert('メモを追加しました。');
+        })
         // 新しく作成されたメモを memos に追加する。
-        setContent('');
-        // メモの内容を空にする。
-      })
-      // 新しく作成されたメモを memos に追加する。
-      .catch(error => console.log(error));
-      // エラーが出たらコンソールに表示。
+        .catch(error => console.log(error));
+        // エラーが出たらコンソールに表示。
+    }
+  };
+
+  const RemoveMemo = (id) => {
+    if (window.confirm('本当に削除しますか？')) {
+      axios.delete(`http://localhost:3000/api/memos/${id}`)
+      // Rails APIに対して削除リクエストを送信。
+        .then(() => {
+          setMemos((prevMemos) => prevMemos.filter(memo => memo.id !== id));
+          // 削除したメモを memos から取り除く。
+          alert('メモを削除しました。');
+        })
+        .catch(error => {
+          console.error("削除に失敗しました:", error);
+          alert("削除に失敗しました。");
+        });
+    }
   };
 
   return (
@@ -45,7 +64,7 @@ const App = () => {
       {/* ボタンを押すと addMemo() を実行（メモを追加）。 */}
       <ul>
         {/* メモの一覧を表示 */}
-        {memos.map(memo => <li key={memo.id}>{memo.content}</li>)}
+        {memos.map(memo => <li key={memo.id}>{memo.content}<button onClick={() => RemoveMemo(memo.id)}>削除</button></li>)}
         {/* memos.map((memo) => <li key={memo.id}>{memo.content}</li>) → memos のデータを li としてリスト表示。 */}
       </ul>
     </div>
